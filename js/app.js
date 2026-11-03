@@ -90,9 +90,9 @@ function updateNow(){
   if(sim.cap){const e=sim.es[t]-sim.eb[t];$("fE").style.width=(sim.soc[t]*100)+"%";$("vE").textContent=e>0?"방전 "+fmtE(e):e<0?"충전 "+fmtE(-e):"대기";}
   const sdr=sim.dem[t]>0?sim.sup[t]/sim.dem[t]:0;
   $("vSDR").textContent=sdr>9?"9+":sdr.toFixed(2);
-  $("sdrNote").textContent=sdr>1?"전기가 남아. 시세가 하한까지 내려가고, 남는 만큼 한전이 하한가로 사가.":
-    sdr<0.02?"태양광이 거의 없어. 시세가 상한에 붙고, 대부분 한전에서 상한가로 채워.":
-    "전기가 모자라. 공급이 적을수록 시세가 상한 쪽으로 올라가고, 모자란 만큼 한전이 채워.";
+  $("sdrNote").textContent=sdr>1?"전기가 남는다. 시세가 하한까지 내려가고, 남는 만큼 한전이 하한가로 사 간다.":
+    sdr<0.02?"태양광이 거의 없다. 시세가 상한에 붙고, 대부분 한전에서 상한가로 채운다.":
+    "전기가 모자란다. 공급이 적을수록 시세가 상한 쪽으로 올라가고, 모자란 만큼 한전이 채운다.";
   drawDay(); scene3d&&scene3d.update(t);
 }
 function drawDay(){
@@ -182,7 +182,7 @@ function build3D(){
     const lo=root.getObjectByName("price_low"), hi=root.getObjectByName("price_high");
     if(lo&&hi){ringLo=lo.position.y;ringHi=hi.position.y;}
     $("loading").remove(); ready=true; scene3d.update(state.day*24+state.hour);
-  },undefined,err=>{$("loading").textContent="모형을 불러오지 못했어. 로컬 서버(README 참고)로 열었는지 확인해줘.";console.error(err);});
+  },undefined,err=>{$("loading").textContent="모형을 불러오지 못했다. 로컬 서버(README 참고)로 열었는지 확인해야 한다.";console.error(err);});
 
   /* ---- network graph (Blender XY coords, same as the model) ---- */
   const ZN=0.07, TRY=[-1.35,2.15], TRX=[-7.2,-2.75,3.55,6.7];
@@ -293,7 +293,7 @@ function build3D(){
 (async function boot(){
   try{
     const res=await fetch(DATA_URL); REGIONS=await res.json();
-  }catch(e){ $("loading").textContent="데이터를 불러오지 못했어. 로컬 서버(README 참고)로 열었는지 확인해줘."; console.error(e); return; }
+  }catch(e){ $("loading").textContent="데이터를 불러오지 못했다. 로컬 서버(README 참고)로 열었는지 확인해야 한다."; console.error(e); return; }
   fillSelect(); bind(); simulate(); updateAnnual(); updateNow();
-  try{ scene3d=build3D(); }catch(e){ $("loading").textContent="3D를 표시할 수 없는 환경이야. 오른쪽 숫자와 그래프로 확인해줘."; console.error(e); }
+  try{ scene3d=build3D(); }catch(e){ $("loading").textContent="3D를 표시할 수 없는 환경이다. 오른쪽 숫자와 그래프로 확인할 수 있다."; console.error(e); }
 })();

@@ -99,38 +99,9 @@
         <div class="kpi"><div class="k">태양광 대체 배출</div><div class="v num" id="kCO2">—</div><div class="s">1만 가구 기준, 0.4173tCO₂/MWh</div></div>
         <div class="kpi"><div class="k">ESS 차익</div><div class="v num" id="kEss">—</div><div class="s" id="kEssS">방전 1kWh당</div></div>
       </div>
-      <p class="note">주거 1만 가구, 가구당 월 296kWh를 가정한 규모야. 비율은 규모와 무관하게 같아.</p>
+      <p class="note">주거 1만 가구, 가구당 월 296kWh를 가정한 규모이다. 비율은 규모와 무관하게 같다.</p>
     </section>
 
-    <section>
-      <h2>작동 원리와 데이터</h2>
-      <details open><summary>가격은 이렇게 정해져 (SDR 방식)</summary>
-        <div class="formula">SDR = 동네 공급 ÷ 동네 수요<br><br>
-        <b>SDR ≤ 1 (전기가 모자랄 때)</b><br>
-        판매가 = 상한×하한 ÷ ((상한−하한)×SDR + 하한)<br>
-        구매가 = 판매가×SDR + 상한×(1−SDR)<br><br>
-        <b>SDR &gt; 1 (전기가 남을 때)</b><br>
-        판매가 = 구매가 = 하한</div>
-        <p>공급이 적을수록 시세가 상한 쪽으로, 남을수록 하한 쪽으로 움직여. 아무도 주문을 내지 않아도 가격이 저절로 정해져. 남는 전기는 하한가로 한전이 사고, 모자란 전기는 상한가로 한전이 채워.</p>
-      </details>
-      <details><summary>쓴 데이터</summary>
-        <ul>
-          <li>태양광: 한국전력거래소 시도별·시간별 태양광 거래량 (2025년, 공공데이터포털)</li>
-          <li>수요: 한국전력공사 지역본부별 시간별 전력사용량 (2024년 날짜를 2025년에 맞춤)</li>
-          <li>요금: 주택용 누진 단계별 전력량요금 + 기후환경요금 9원 + 연료비조정요금 5원</li>
-          <li>배출계수: 2023년 공표값 0.4173 tCO₂eq/MWh</li>
-        </ul>
-      </details>
-      <details><summary>한계 (솔직하게)</summary>
-        <ul>
-          <li>구 단위 시간별 데이터는 없어서, 시도·지역본부의 실제 시간 패턴을 썼어.</li>
-          <li>한전 소비 데이터는 상가·공장까지 섞인 전체 사용량이라, 주택만의 패턴과 달라.</li>
-          <li>태양광 보유 가구의 자가소비, 기본요금·부가세는 두 경우 모두 같다고 보고 뺐어.</li>
-          <li>ESS는 남는 전기만 하한가로 충전하고, 시세를 무너뜨리지 않는 만큼만(이익 최대 지점까지) 방전해. 열화·유지비·인버터 교체비는 넣지 않았어.</li>
-          <li>망 이용료 기본값 10원은 비교용 가정값이야.</li>
-        </ul>
-      </details>
-    </section>
   </aside>
 </div>
 
