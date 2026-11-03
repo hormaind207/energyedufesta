@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>보이지 않는 손 그리드 · 실시간 거래 시뮬레이션</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+<meta name="description" content="보이지 않는 손 그리드: 가격 밴드형 동네 전력시장 실시간 거래 시뮬레이션">
+</head>
+<body>
+<div class="app">
+  <div class="stage">
+    <header>
+      <div class="title">
+        <h1>보이지 않는 손 그리드</h1>
+        <p class="sub">동네 전력시장 실시간 거래 시뮬레이션</p>
+      </div>
+      <div class="clock" aria-live="polite"><div class="t num" id="clockT">12:00</div><div class="d" id="clockD">4월 15일 · 서울</div></div>
+    </header>
+    <div id="view" aria-label="3D 동네 모형"><div class="loading" id="loading">마을 모형을 불러오는 중…</div><div class="labels" id="labels"></div></div>
+    <div class="chart">
+      <div class="head"><b id="dayTitle">하루 흐름</b>
+        <div class="legend"><span><i style="background:var(--sell)"></i>태양광 공급</span><span><i style="background:var(--buy)"></i>수요</span><span><i style="background:var(--price)"></i>동네 시세</span><span><i style="background:var(--kepco)"></i>상·하한</span></div>
+      </div>
+      <div id="day" title="그래프를 누르면 그 시각으로 이동"></div>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <section>
+      <h2>시간</h2>
+      <div class="row"><label for="region">지역 데이터</label>
+        <select id="region"></select></div>
+      <div class="row"><label for="dayR">날짜</label><output id="dayO" class="num"></output></div>
+      <input type="range" id="dayR" min="0" max="364" value="104">
+      <div class="row"><label for="hourR">시각</label><output id="hourO" class="num"></output></div>
+      <input type="range" id="hourR" min="0" max="23" value="12">
+      <div class="btns" style="margin-top:8px">
+        <button class="primary" id="play" aria-pressed="false">▶ 재생</button>
+        <button data-season="0">맑은 봄날</button><button data-season="1">맑은 여름날</button><button data-season="2">맑은 가을날</button><button data-season="3">맑은 겨울날</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>가격 밴드 <small>지금 이 시각</small></h2>
+      <div class="gauge">
+        <div class="band" id="band" aria-hidden="true">
+          <div class="mk b" id="mkB"></div><div class="mk s" id="mkS"></div>
+        </div>
+        <div class="gnums">
+          <div><div class="lbl">상한 · 한전 소매가</div><div class="num" id="gHi">—</div></div>
+          <div><div class="lbl">판매자가 받는 동네 시세</div><div class="big num" id="gS" style="color:var(--price)">—</div><div class="lbl">구매자 평균 부담 <b class="num" id="gB" style="color:var(--buy)">—</b></div></div>
+          <div><div class="lbl">하한 · 한전 매입가(SMP)</div><div class="num" id="gLo">—</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>지금 거래 상황</h2>
+      <div class="flows">
+        <div class="flow"><span>태양광 공급</span><div class="track"><div class="fill" id="fPV" style="background:var(--sell)"></div></div><span class="v num" id="vPV"></span></div>
+        <div class="flow"><span>동네 수요</span><div class="track"><div class="fill" id="fD" style="background:var(--buy)"></div></div><span class="v num" id="vD"></span></div>
+        <div class="flow"><span>동네 안 거래</span><div class="track"><div class="fill" id="fL" style="background:var(--local)"></div></div><span class="v num" id="vL"></span></div>
+        <div class="flow"><span>한전에 팖</span><div class="track"><div class="fill" id="fTo" style="background:var(--kepco)"></div></div><span class="v num" id="vTo"></span></div>
+        <div class="flow"><span>한전에서 삼</span><div class="track"><div class="fill" id="fFr" style="background:var(--kepco);opacity:.55"></div></div><span class="v num" id="vFr"></span></div>
+        <div class="flow" id="essRow"><span>ESS</span><div class="track"><div class="fill" id="fE" style="background:var(--ess)"></div></div><span class="v num" id="vE"></span></div>
+      </div>
+      <div class="sdr"><span>공급 ÷ 수요 (SDR)</span><b class="num" id="vSDR">—</b></div>
+      <p class="note" id="sdrNote"></p>
+    </section>
+
+    <section>
+      <h2>정책 변수</h2>
+      <div class="row"><label for="pvR">태양광 보급률 <span class="num" style="font-size:12px">(연간 수요 대비)</span></label><output id="pvO" class="num"></output></div>
+      <input type="range" id="pvR" min="1" max="80" value="15">
+      <div class="stagebar" id="stagebar"><div>1단계 판매자 늘리기</div><div>2단계 구매자 혜택</div><div>3단계 ESS 투입</div></div>
+      <div class="row"><label for="tier">구매자 누진 구간 (상한)</label>
+        <select id="tier"><option value="134">1단계 · 134원</option><option value="228.6" selected>2단계 · 228.6원</option><option value="321.3">3단계 · 321.3원</option></select></div>
+      <div class="row"><label for="smpR">SMP (하한)</label><output id="smpO" class="num"></output></div>
+      <input type="range" id="smpR" min="80" max="180" value="120">
+      <div class="row"><label for="feeR">망 이용료 <span style="font-size:12px">(동네 거래분, 가정값)</span></label><output id="feeO" class="num"></output></div>
+      <input type="range" id="feeR" min="0" max="40" value="10">
+      <div class="row"><label for="essC">ESS 투입</label><button id="essC" aria-pressed="false">꺼짐</button></div>
+      <div class="row"><label for="essR">ESS 용량 <span style="font-size:12px">(하루 평균 수요 대비)</span></label><output id="essO" class="num"></output></div>
+      <input type="range" id="essR" min="5" max="60" value="20">
+    </section>
+
+    <section>
+      <h2>1년 전체 결과 <small id="yrSub"></small></h2>
+      <div class="kpis">
+        <div class="kpi"><div class="k">구매자 전기요금</div><div class="v num" id="kBuy">—</div><div class="s">한전에서만 살 때 대비</div></div>
+        <div class="kpi"><div class="k">판매자 평균 판매가</div><div class="v num" id="kSell">—</div><div class="s" id="kSellS">—</div></div>
+        <div class="kpi"><div class="k">동네 자급률</div><div class="v num" id="kSelf">—</div><div class="s">수요 중 동네 태양광·ESS 비중</div></div>
+        <div class="kpi"><div class="k">한전에 판 비율</div><div class="v num" id="kOut">—</div><div class="s">태양광 중 남아서 한전으로</div></div>
+        <div class="kpi"><div class="k">태양광 대체 배출</div><div class="v num" id="kCO2">—</div><div class="s">1만 가구 기준, 0.4173tCO₂/MWh</div></div>
+        <div class="kpi"><div class="k">ESS 차익</div><div class="v num" id="kEss">—</div><div class="s" id="kEssS">방전 1kWh당</div></div>
+      </div>
+      <p class="note">주거 1만 가구, 가구당 월 296kWh를 가정한 규모야. 비율은 규모와 무관하게 같아.</p>
+    </section>
+
+    <section>
+      <h2>작동 원리와 데이터</h2>
+      <details open><summary>가격은 이렇게 정해져 (SDR 방식)</summary>
+        <div class="formula">SDR = 동네 공급 ÷ 동네 수요<br><br>
+        <b>SDR ≤ 1 (전기가 모자랄 때)</b><br>
+        판매가 = 상한×하한 ÷ ((상한−하한)×SDR + 하한)<br>
+        구매가 = 판매가×SDR + 상한×(1−SDR)<br><br>
+        <b>SDR &gt; 1 (전기가 남을 때)</b><br>
+        판매가 = 구매가 = 하한</div>
+        <p>공급이 적을수록 시세가 상한 쪽으로, 남을수록 하한 쪽으로 움직여. 아무도 주문을 내지 않아도 가격이 저절로 정해져. 남는 전기는 하한가로 한전이 사고, 모자란 전기는 상한가로 한전이 채워.</p>
+      </details>
+      <details><summary>쓴 데이터</summary>
+        <ul>
+          <li>태양광: 한국전력거래소 시도별·시간별 태양광 거래량 (2025년, 공공데이터포털)</li>
+          <li>수요: 한국전력공사 지역본부별 시간별 전력사용량 (2024년 날짜를 2025년에 맞춤)</li>
+          <li>요금: 주택용 누진 단계별 전력량요금 + 기후환경요금 9원 + 연료비조정요금 5원</li>
+          <li>배출계수: 2023년 공표값 0.4173 tCO₂eq/MWh</li>
+        </ul>
+      </details>
+      <details><summary>한계 (솔직하게)</summary>
+        <ul>
+          <li>구 단위 시간별 데이터는 없어서, 시도·지역본부의 실제 시간 패턴을 썼어.</li>
+          <li>한전 소비 데이터는 상가·공장까지 섞인 전체 사용량이라, 주택만의 패턴과 달라.</li>
+          <li>태양광 보유 가구의 자가소비, 기본요금·부가세는 두 경우 모두 같다고 보고 뺐어.</li>
+          <li>ESS는 남는 전기만 하한가로 충전하고, 시세를 무너뜨리지 않는 만큼만(이익 최대 지점까지) 방전해. 열화·유지비·인버터 교체비는 넣지 않았어.</li>
+          <li>망 이용료 기본값 10원은 비교용 가정값이야.</li>
+        </ul>
+      </details>
+    </section>
+  </aside>
+</div>
+
+<script src="vendor/three/three.min.js"></script>
+<script src="vendor/three/GLTFLoader.js"></script>
+<script src="vendor/three/OrbitControls.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
